@@ -1,0 +1,504 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Spell Stack — Working Memory Arena</title>
+<style>
+  :root {
+    --bg: #0b1020;
+    --bg-2: #131a36;
+    --fg: #e7ecff;
+    --muted: #8b95c4;
+    --accent: #7ee7ff;
+    --good: #6cf08a;
+    --bad: #ff7a8a;
+    --cell: #1c2547;
+    --cell-edge: #2c3870;
+    --R: #ff6b6b;
+    --G: #6cf08a;
+    --B: #6aa9ff;
+    --Y: #ffd86b;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: radial-gradient(1200px 600px at 50% -200px, #1a2350, var(--bg) 60%);
+    color: var(--fg);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, sans-serif;
+    min-height: 100vh;
+  }
+  main {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 24px 20px 60px;
+  }
+  header h1 {
+    margin: 0 0 4px;
+    font-size: 28px;
+    letter-spacing: 0.5px;
+  }
+  header p.tagline {
+    margin: 0 0 18px;
+    color: var(--muted);
+    font-size: 14px;
+  }
+  #hud {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    background: var(--bg-2);
+    padding: 12px;
+    border-radius: 12px;
+    margin-bottom: 16px;
+    border: 1px solid #1f2a55;
+  }
+  .stat { text-align: center; }
+  .stat .label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+  .stat .value { font-size: 18px; font-weight: 600; margin-top: 2px; }
+  #directive-bar {
+    background: var(--bg-2);
+    border: 1px solid #1f2a55;
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  #directive-name {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 1px;
+  }
+  #directive-hint {
+    color: var(--muted);
+    font-size: 13px;
+    text-align: right;
+    max-width: 60%;
+  }
+  #board {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    aspect-ratio: 1 / 1;
+    margin-bottom: 16px;
+  }
+  .cell {
+    background: var(--cell);
+    border: 1px solid var(--cell-edge);
+    border-radius: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    font-weight: 700;
+    transition: transform 60ms ease, box-shadow 200ms ease, background 200ms ease;
+    user-select: none;
+    color: rgba(255,255,255,0.0);
+  }
+  .cell:hover { transform: translateY(-1px); }
+  .cell.flash-R { background: var(--R); color: rgba(0,0,0,0.6); box-shadow: 0 0 30px var(--R); }
+  .cell.flash-G { background: var(--G); color: rgba(0,0,0,0.6); box-shadow: 0 0 30px var(--G); }
+  .cell.flash-B { background: var(--B); color: rgba(0,0,0,0.6); box-shadow: 0 0 30px var(--B); }
+  .cell.flash-Y { background: var(--Y); color: rgba(0,0,0,0.6); box-shadow: 0 0 30px var(--Y); }
+  .cell.tap-good { box-shadow: inset 0 0 0 3px var(--good); }
+  .cell.tap-bad { box-shadow: inset 0 0 0 3px var(--bad); }
+  .cell[disabled] { cursor: not-allowed; opacity: 0.65; }
+  #status-bar {
+    min-height: 40px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 14px;
+    margin-bottom: 12px;
+  }
+  #status-bar.go { color: var(--accent); font-size: 18px; font-weight: 600; }
+  #status-bar.good { color: var(--good); }
+  #status-bar.bad { color: var(--bad); }
+  #controls {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  button.btn {
+    background: var(--accent);
+    color: #0b1020;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 18px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  button.btn.ghost {
+    background: transparent;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+  }
+  button.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  #overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(7, 11, 28, 0.92);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 10;
+  }
+  #overlay.show { display: flex; }
+  .panel {
+    max-width: 520px;
+    width: 100%;
+    background: var(--bg-2);
+    border: 1px solid #2c3870;
+    border-radius: 16px;
+    padding: 24px;
+  }
+  .panel h2 { margin: 0 0 8px; }
+  .panel p { color: var(--muted); line-height: 1.5; font-size: 14px; }
+  .panel ul { color: var(--muted); font-size: 14px; padding-left: 20px; }
+  .panel li { margin-bottom: 6px; }
+  .panel .row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+  .legend { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0 12px; }
+  .swatch { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
+  .swatch i { width: 14px; height: 14px; border-radius: 4px; display: inline-block; }
+  .scoreboard { display: grid; grid-template-columns: 1fr auto; row-gap: 4px; font-size: 14px; margin: 10px 0; }
+  .scoreboard div:nth-child(odd) { color: var(--muted); }
+  footer {
+    margin-top: 18px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 12px;
+  }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Spell Stack</h1>
+    <p class="tagline">Watch the runes. Hold them in mind. Cast them back the way the spell demands.</p>
+  </header>
+
+  <div id="hud" aria-live="polite">
+    <div class="stat"><div class="label">Round</div><div class="value" id="stat-round">0 / 8</div></div>
+    <div class="stat"><div class="label">Length</div><div class="value" id="stat-len">3</div></div>
+    <div class="stat"><div class="label">Score</div><div class="value" id="stat-score">0</div></div>
+    <div class="stat"><div class="label">Time</div><div class="value" id="stat-time">5:00</div></div>
+  </div>
+
+  <div id="directive-bar">
+    <div id="directive-name">READY</div>
+    <div id="directive-hint">Press Begin to start.</div>
+  </div>
+
+  <div id="board" aria-label="3 by 3 rune grid"></div>
+
+  <div id="status-bar">Press Begin to learn the rules.</div>
+
+  <div id="controls">
+    <button id="btn-begin" class="btn">Begin</button>
+    <button id="btn-rules" class="btn ghost">Rules</button>
+  </div>
+
+  <footer>Tip: skill beats luck. The spell length adapts to how well you cast.</footer>
+</main>
+
+<div id="overlay" class="show" role="dialog" aria-modal="true">
+  <div class="panel" id="panel">
+    <h2>How to play Spell Stack</h2>
+    <p>A 3×3 grid of runes lights up in a sequence. Each rune has a position and a color. Reproduce the sequence by tapping cells, but follow the directive shown above the grid.</p>
+    <div class="legend">
+      <span class="swatch"><i style="background:var(--R)"></i>Red</span>
+      <span class="swatch"><i style="background:var(--Y)"></i>Yellow</span>
+      <span class="swatch"><i style="background:var(--G)"></i>Green</span>
+      <span class="swatch"><i style="background:var(--B)"></i>Blue</span>
+    </div>
+    <ul>
+      <li><b>FORWARD</b> — tap cells in the same order they lit up.</li>
+      <li><b>REVERSE</b> — tap cells in reverse order. (1.5× score)</li>
+      <li><b>ALPHA</b> — tap by color in alphabetical order: Blue → Green → Red → Yellow. Same color, earlier first. (2× score)</li>
+    </ul>
+    <p>Each correct tap scores. A perfect round bumps the spell length up by one and adds a bonus. A mistake drops the length by one (minimum 3). Eight rounds, five-minute cap.</p>
+    <div class="row">
+      <button class="btn" id="btn-overlay-close">Got it</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  "use strict";
+
+  const COLORS = ["R", "G", "B", "Y"];
+  const COLOR_NAME = { R: "Red", G: "Green", B: "Blue", Y: "Yellow" };
+  const ALPHA_ORDER = ["B", "G", "R", "Y"]; // alphabetical color priority
+  const DIRECTIVES = [
+    { id: "FORWARD", mult: 1.0, hint: "Tap cells in the order they lit up." },
+    { id: "REVERSE", mult: 1.5, hint: "Tap cells in reverse order." },
+    { id: "ALPHA",   mult: 2.0, hint: "Tap by color: Blue → Green → Red → Yellow (ties: earlier first)." },
+  ];
+
+  const TOTAL_ROUNDS = 8;
+  const TIME_LIMIT_MS = 5 * 60 * 1000;
+  const START_LEN = 3;
+  const MAX_LEN = 8;
+  const MIN_LEN = 3;
+
+  const els = {
+    board: document.getElementById("board"),
+    directiveName: document.getElementById("directive-name"),
+    directiveHint: document.getElementById("directive-hint"),
+    statusBar: document.getElementById("status-bar"),
+    statRound: document.getElementById("stat-round"),
+    statLen: document.getElementById("stat-len"),
+    statScore: document.getElementById("stat-score"),
+    statTime: document.getElementById("stat-time"),
+    btnBegin: document.getElementById("btn-begin"),
+    btnRules: document.getElementById("btn-rules"),
+    overlay: document.getElementById("overlay"),
+    panel: document.getElementById("panel"),
+    overlayClose: document.getElementById("btn-overlay-close"),
+  };
+
+  const cells = [];
+  for (let i = 0; i < 9; i++) {
+    const cell = document.createElement("div");
+    cell.className = "cell";
+    cell.dataset.idx = String(i);
+    cell.setAttribute("role", "button");
+    cell.setAttribute("aria-label", `Rune cell ${i + 1}`);
+    cell.addEventListener("click", () => onCellTap(i));
+    els.board.appendChild(cell);
+    cells.push(cell);
+  }
+
+  const state = {
+    started: false,
+    round: 0,
+    seqLen: START_LEN,
+    score: 0,
+    sequence: [],
+    expected: [],
+    tapIndex: 0,
+    accepting: false,
+    startTime: 0,
+    directive: null,
+    timer: null,
+    correctThisRound: 0,
+  };
+
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+  function setStatus(text, kind) {
+    els.statusBar.textContent = text;
+    els.statusBar.className = "";
+    if (kind) els.statusBar.classList.add(kind);
+  }
+
+  function fmtTime(ms) {
+    const s = Math.max(0, Math.ceil(ms / 1000));
+    const m = Math.floor(s / 60);
+    const sec = s % 60;
+    return `${m}:${sec.toString().padStart(2, "0")}`;
+  }
+
+  function updateHud() {
+    els.statRound.textContent = `${Math.min(state.round, TOTAL_ROUNDS)} / ${TOTAL_ROUNDS}`;
+    els.statLen.textContent = String(state.seqLen);
+    els.statScore.textContent = String(state.score);
+    const remain = state.started ? TIME_LIMIT_MS - (Date.now() - state.startTime) : TIME_LIMIT_MS;
+    els.statTime.textContent = fmtTime(remain);
+  }
+
+  function startTimer() {
+    state.startTime = Date.now();
+    if (state.timer) clearInterval(state.timer);
+    state.timer = setInterval(() => {
+      updateHud();
+      if (Date.now() - state.startTime >= TIME_LIMIT_MS) {
+        endGame("Time up.");
+      }
+    }, 250);
+  }
+
+  function makeSequence(len) {
+    const seq = [];
+    let last = -1;
+    for (let i = 0; i < len; i++) {
+      let pos;
+      do { pos = Math.floor(Math.random() * 9); } while (pos === last);
+      last = pos;
+      const color = COLORS[Math.floor(Math.random() * COLORS.length)];
+      seq.push({ pos, color });
+    }
+    return seq;
+  }
+
+  function expectedFor(directive, seq) {
+    if (directive === "FORWARD") return seq.slice();
+    if (directive === "REVERSE") return seq.slice().reverse();
+    if (directive === "ALPHA") {
+      const indexed = seq.map((r, i) => ({ ...r, original: i }));
+      indexed.sort((a, b) => {
+        const ca = ALPHA_ORDER.indexOf(a.color);
+        const cb = ALPHA_ORDER.indexOf(b.color);
+        if (ca !== cb) return ca - cb;
+        return a.original - b.original;
+      });
+      return indexed;
+    }
+    return seq.slice();
+  }
+
+  async function flashSequence(seq) {
+    setStatus("Watch the spell…");
+    for (const cell of cells) cell.classList.remove("tap-good", "tap-bad");
+    await sleep(400);
+    for (let i = 0; i < seq.length; i++) {
+      const { pos, color } = seq[i];
+      const cell = cells[pos];
+      cell.classList.add(`flash-${color}`);
+      cell.textContent = String(i + 1);
+      await sleep(620);
+      cell.classList.remove(`flash-${color}`);
+      cell.textContent = "";
+      await sleep(180);
+    }
+  }
+
+  function pickDirective(round) {
+    // Round 1 is always FORWARD to teach the loop. After that, random.
+    if (round === 1) return DIRECTIVES[0];
+    return DIRECTIVES[Math.floor(Math.random() * DIRECTIVES.length)];
+  }
+
+  async function startRound() {
+    if (state.round >= TOTAL_ROUNDS) {
+      return endGame("All rounds complete.");
+    }
+    state.round += 1;
+    state.correctThisRound = 0;
+    state.directive = pickDirective(state.round);
+    state.sequence = makeSequence(state.seqLen);
+    state.expected = expectedFor(state.directive.id, state.sequence);
+    state.tapIndex = 0;
+    state.accepting = false;
+
+    els.directiveName.textContent = state.directive.id;
+    els.directiveHint.textContent = `${state.directive.hint}  ×${state.directive.mult.toFixed(1)}`;
+    updateHud();
+
+    await flashSequence(state.sequence);
+    state.accepting = true;
+    setStatus(`GO — ${state.directive.id} (${state.expected.length} taps)`, "go");
+  }
+
+  function onCellTap(idx) {
+    if (!state.accepting) return;
+    const want = state.expected[state.tapIndex];
+    const cell = cells[idx];
+    if (idx === want.pos) {
+      cell.classList.add("tap-good");
+      cell.classList.add(`flash-${want.color}`);
+      cell.textContent = String(state.tapIndex + 1);
+      state.tapIndex += 1;
+      state.correctThisRound += 1;
+      const points = Math.round(10 * state.directive.mult);
+      state.score += points;
+      updateHud();
+      if (state.tapIndex >= state.expected.length) {
+        finishRound(true);
+      }
+    } else {
+      cell.classList.add("tap-bad");
+      finishRound(false);
+    }
+  }
+
+  async function finishRound(perfect) {
+    state.accepting = false;
+    if (perfect) {
+      const bonus = 20;
+      state.score += bonus;
+      state.seqLen = Math.min(MAX_LEN, state.seqLen + 1);
+      setStatus(`Perfect cast. +${bonus} bonus. Spell length → ${state.seqLen}.`, "good");
+    } else {
+      state.seqLen = Math.max(MIN_LEN, state.seqLen - 1);
+      const correctCount = state.correctThisRound;
+      setStatus(`Miscast at tap ${state.tapIndex + 1}. ${correctCount} runes scored. Length → ${state.seqLen}.`, "bad");
+    }
+    updateHud();
+    await sleep(1400);
+    for (const cell of cells) {
+      cell.className = "cell";
+      cell.textContent = "";
+    }
+    if (Date.now() - state.startTime >= TIME_LIMIT_MS) {
+      return endGame("Time up.");
+    }
+    startRound();
+  }
+
+  function endGame(reason) {
+    state.accepting = false;
+    if (state.timer) { clearInterval(state.timer); state.timer = null; }
+    els.directiveName.textContent = "DONE";
+    els.directiveHint.textContent = reason;
+    setStatus(`Final score: ${state.score}.`, "good");
+
+    els.panel.innerHTML = `
+      <h2>Spell complete</h2>
+      <div class="scoreboard">
+        <div>Reason</div><div>${reason}</div>
+        <div>Rounds played</div><div>${state.round}</div>
+        <div>Final spell length</div><div>${state.seqLen}</div>
+        <div>Final score</div><div>${state.score}</div>
+      </div>
+      <p>Working memory load grew with each perfect cast and the <i>REVERSE</i> and <i>ALPHA</i> directives forced you to manipulate, not just replay. Try again to push your span higher.</p>
+      <div class="row">
+        <button class="btn" id="btn-replay">Play again</button>
+      </div>
+    `;
+    els.overlay.classList.add("show");
+    document.getElementById("btn-replay").addEventListener("click", () => {
+      location.reload();
+    });
+  }
+
+  function showRulesOverlay() {
+    els.overlay.classList.add("show");
+  }
+
+  function hideOverlay() {
+    els.overlay.classList.remove("show");
+  }
+
+  els.overlayClose.addEventListener("click", () => {
+    hideOverlay();
+  });
+  els.btnRules.addEventListener("click", () => {
+    if (state.started) {
+      // Pause-friendly: re-show base panel
+      els.panel.innerHTML = els.panel.innerHTML; // no-op but keeps content
+    }
+    showRulesOverlay();
+  });
+  els.btnBegin.addEventListener("click", () => {
+    if (state.started) return;
+    state.started = true;
+    hideOverlay();
+    els.btnBegin.disabled = true;
+    els.btnBegin.textContent = "In progress…";
+    startTimer();
+    startRound();
+  });
+
+  updateHud();
+})();
+</script>
+</body>
+</html>

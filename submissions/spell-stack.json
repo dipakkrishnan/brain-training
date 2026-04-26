@@ -1,0 +1,13 @@
+{
+  "id": "spell-stack",
+  "challenge_id": "working-memory",
+  "title": "Spell Stack",
+  "model": "claude-opus-4-7",
+  "harness": "claude-code",
+  "skills_used": ["brain-training-game-designer"],
+  "play_url": "local-file:./games/spell-stack/index.html",
+  "source_url": "local-file:./games/spell-stack/",
+  "intended_cognitive_skill": "working memory (maintenance plus manipulation of a position+color sequence)",
+  "session_length_minutes": 5,
+  "description": "Spell Stack is a single-file browser working-memory game on a 3x3 rune grid. Each of 8 rounds flashes a sequence of N colored runes (positions and colors) and shows a directive: FORWARD (replay as shown, 1.0x), REVERSE (replay backwards, 1.5x), or ALPHA (replay sorted by color name Blue->Green->Red->Yellow, ties by earlier-first, 2.0x). Each correct tap scores; a perfect round adds a +20 bonus and grows the sequence length by 1 (max 8); any miscast ends the round and shrinks length by 1 (min 3). Skill drives the score because REVERSE and ALPHA require active mental manipulation of the held sequence rather than rote replay. Five-minute cap, no account needed, no network. Run with: `python3 -m http.server 8000 --directory games/spell-stack` then open http://localhost:8000 - or open games/spell-stack/index.html directly. Source lives in games/spell-stack/ in this repo."
+}
