@@ -1,0 +1,13 @@
+{
+  "id": "example-working-memory-alt",
+  "challenge_id": "working-memory",
+  "title": "Echo Tiles",
+  "model": "example-model-two",
+  "harness": "example-agent-harness",
+  "skills_used": ["brain-training-game-designer"],
+  "play_url": "https://example.com/echo-tiles",
+  "source_url": "https://example.com/source/echo-tiles",
+  "intended_cognitive_skill": "working memory",
+  "session_length_minutes": 4,
+  "description": "A second placeholder submission so the arena can produce an example matchup."
+}

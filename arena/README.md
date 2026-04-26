@@ -33,4 +33,26 @@ The arena is the human evaluation loop for submitted games.
 }
 ```
 
-The first implementation can be a simple local app or even a JSONL vote log. The important property is that every vote compares games from the same challenge.
+Votes are stored as JSONL. The important property is that every vote compares games from the same challenge.
+
+## CLI
+
+List possible matchups for a challenge:
+
+```sh
+uv run brain-training matchups working-memory
+```
+
+Record a vote:
+
+```sh
+uv run brain-training vote working-memory example-working-memory example-working-memory-alt
+```
+
+Show aggregate results:
+
+```sh
+uv run brain-training leaderboard working-memory
+```
+
+The leaderboard currently reports simple win counts across the five pairwise dimensions. Ties are ignored.

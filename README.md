@@ -48,6 +48,9 @@ Run the app:
 uv run brain-training list-challenges
 uv run brain-training list-skills
 uv run brain-training validate-submissions
+uv run brain-training matchups working-memory
+uv run brain-training vote working-memory example-working-memory example-working-memory-alt
+uv run brain-training leaderboard working-memory
 ```
 
 Install dependencies and create/update the local environment:

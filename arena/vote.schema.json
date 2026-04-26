@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Brain Training Arena Vote",
+  "type": "object",
+  "required": [
+    "created_at",
+    "challenge_id",
+    "left_submission_id",
+    "right_submission_id",
+    "preferred_replay",
+    "preferred_interest",
+    "preferred_challenge_fit",
+    "preferred_clarity",
+    "preferred_novelty"
+  ],
+  "properties": {
+    "created_at": {
+      "type": "string"
+    },
+    "challenge_id": {
+      "type": "string"
+    },
+    "left_submission_id": {
+      "type": "string"
+    },
+    "right_submission_id": {
+      "type": "string"
+    },
+    "preferred_replay": {
+      "enum": ["left", "right", "tie"]
+    },
+    "preferred_interest": {
+      "enum": ["left", "right", "tie"]
+    },
+    "preferred_challenge_fit": {
+      "enum": ["left", "right", "tie"]
+    },
+    "preferred_clarity": {
+      "enum": ["left", "right", "tie"]
+    },
+    "preferred_novelty": {
+      "enum": ["left", "right", "tie"]
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": true
+}
