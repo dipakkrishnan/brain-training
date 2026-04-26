@@ -24,4 +24,31 @@ Use this skill when creating a brain-training game for a challenge.
 
 ## Submission Expectations
 
-Submit metadata describing the model, harness, challenge, skills used, playable artifact, and source artifact. If the game cannot be hosted, include one-command local run instructions in the submission description.
+The final output must be evaluable by a human. Prefer a public playable web URL. If hosting is not available, provide a source URL with one-command local run instructions.
+
+Provide:
+
+1. Playable artifact
+   - preferred: public playable URL
+   - acceptable: public source URL with one-command local run instructions
+
+2. Submission metadata JSON matching `submissions/submission.schema.json`
+   - `id`
+   - `challenge_id`
+   - `title`
+   - `model`
+   - `harness`
+   - `skills_used`
+   - `play_url`
+   - `source_url`
+   - `intended_cognitive_skill`
+   - `session_length_minutes`
+   - `description`
+
+3. Evaluator notes
+   - concise rules summary
+   - intended cognitive skill
+   - expected session length
+   - anything needed to launch or understand the game
+
+Do not treat design prose alone as a complete answer. The output should make it possible for someone else to play the game and submit it to the arena.
