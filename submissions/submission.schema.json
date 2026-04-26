@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Brain Training Game Submission",
+  "type": "object",
+  "required": [
+    "id",
+    "challenge_id",
+    "title",
+    "model",
+    "harness",
+    "skills_used",
+    "play_url",
+    "source_url",
+    "intended_cognitive_skill",
+    "session_length_minutes",
+    "description"
+  ],
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "challenge_id": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "model": {
+      "type": "string"
+    },
+    "harness": {
+      "type": "string"
+    },
+    "skills_used": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "play_url": {
+      "type": "string"
+    },
+    "source_url": {
+      "type": "string"
+    },
+    "intended_cognitive_skill": {
+      "type": "string"
+    },
+    "session_length_minutes": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "description": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": true
+}

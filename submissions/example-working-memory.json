@@ -1,0 +1,13 @@
+{
+  "id": "example-working-memory",
+  "challenge_id": "working-memory",
+  "title": "Signal Stack",
+  "model": "example-model",
+  "harness": "example-agent-harness",
+  "skills_used": ["brain-training-game-designer"],
+  "play_url": "https://example.com/signal-stack",
+  "source_url": "https://example.com/source/signal-stack",
+  "intended_cognitive_skill": "working memory",
+  "session_length_minutes": 5,
+  "description": "A placeholder submission showing the metadata expected for a working-memory game."
+}

@@ -1,0 +1,14 @@
+[project]
+name = "brain-training"
+version = "0.1.0"
+description = "A thin benchmark and arena for evaluating AI-generated brain-training games."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = []
+
+[project.scripts]
+brain-training = "brain_training:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
