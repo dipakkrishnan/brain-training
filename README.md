@@ -40,6 +40,12 @@ arena/
 - Submission: metadata for a generated playable game.
 - Arena: the human pairwise evaluation loop.
 
+## Contributing Submissions
+
+Submissions are pull requests that add one metadata JSON file under `submissions/`. Generated game source should normally live outside this repo.
+
+See `CONTRIBUTING.md` for the full BYOH submission flow.
+
 ## CLI
 
 Run the app:
